@@ -18,37 +18,50 @@ const especialFamilia = new Album(canciones = #{laFamilia},tituloAlbum= "Especia
 const laSole = new Album(canciones = #{eres,corazon},tituloAlbum= "La Sole",fechaLanzamiento= 050205,unidadesAlaVenta=200000,unidadesVendidas=130000)
 const paraLosArboles = new Album(canciones=#{cisne,alma},tituloAlbum="para llosa arboles",fechaLanzamiento=030331,unidadesAlaVenta=50000,unidadesVendidas=49000)
 const just = new Album(canciones=#{crisantemo},tituloAlbum="just Crisantemo",fechaLanzamiento=071205,unidadesAlaVenta=28000,unidadesVendidas=27500)
-
-object luisAlberto{
-    var grupo = null
-    var habilidad = 0
-    var albumes = #{paraLosArboles,just}
-    var tarifa = 1000
-
-    method laPego(){
-    return self.albumes().all{album => album.tieneBuenasVentas()}
-}
-    method duracionObra(){
-    return self.albumes().sum{album => album.duracion()}
-    }
-    method cancionesContienen(palabra){ return
-    self.todasSusCanciones().filter{cancion => cancion.letra().contains(palabra)}
-    }
-    method todasSusCanciones() {return self.albumes().flatMap{album => album.canciones() }}
-    method albumes() = albumes
-    method esMinimalista(){
-    return self.albumes().all{album => album.esMinimalista()}
-    }
+const probar = new Album(canciones=#{alma,crisantemo},tituloAlbum = null,fechaLanzamiento = null,unidadesAlaVenta= null,unidadesVendidas= null)
+object luisAlberto inherits Musico{
+    override method habilidad() = habilidad
     method habilidad(guitarra) {if(guitarra.valor() *8 > 100){return 100}
     else{return guitarra.valor() *8}}
 
-    method interpretaBien(cancion){return true}
+    override method interpretaBien(cancion){return true}
 
     method tarifa(presentacion){
         if(presentacion.fecha() < 201101){return tarifa}
         else{return tarifa+200}
     }
     //201101 es 1ro de noviembre de 2020
+}
+
+class Musico{
+var grupo = null
+var habilidad = 0 
+var tarifa = 1000
+var albumes =  #{paraLosArboles,just}
+
+method todasSusCanciones()  {return self.albumes().flatMap{album => album.canciones() }}
+method albumes() = albumes
+method grupo(nuevoGrupo){grupo = nuevoGrupo}
+method albumes(listaAlbums){albumes = listaAlbums}
+method tarifa() = tarifa
+method esMinimalista(){
+    return self.albumes().all{album => album.esMinimalista()}
+    }
+method duracionObra(){
+    return self.albumes().sum{album => album.duracion()}
+}
+method laPego(){
+    return self.albumes().all{album => album.tieneBuenasVentas()}
+}
+method cancionesContienen(palabra){return
+    self.todasSusCanciones().filter{cancion => cancion.letra().contains(palabra)}
+}
+method mashup(canciones){
+    const nuevaCancion = new Cancion(duracion = canciones.cancionMayor(),letra = canciones.concatenarLetras(),tituloPrincipal = null )
+    return nuevaCancion.letra()
+}
+method habilidad()
+method interpretaBien(cancion) {return self.todasSusCanciones().contains(cancion) || self.habilidad() > 60}
 }
 
 object guitarraFender{
@@ -95,39 +108,15 @@ object laTrastienda{
     method esConcurrido() = capacidad > 5000
 }
 
-class Musico{
-var grupo
-var habilidad
-var tarifa
-var albumes
-
-method todasSusCanciones()  {return self.albumes().flatMap{album => album.canciones() }}
-method albumes() = albumes
-method grupo(nuevoGrupo){grupo = nuevoGrupo}
-method albumes(listaAlbums){albumes = listaAlbums}
-method tarifa() = tarifa
-method esMinimalista(){
-    return self.albumes().all{album => album.esMinimalista()}
-    }
-method duracionObra(){
-    return self.albumes().sum{album => album.duracion()}
-}
-method laPego(){
-    return self.albumes().all{album => album.tieneBuenasVentas()}
-}
-method cancionesContienen(palabra){return
-    self.todasSusCanciones().filter{cancion => cancion.letra().contains(palabra)}
-}
-}
-
 class MusicoDeGrupo inherits Musico{
 var factorDeAumento
 
-    method habilidad() {
+    override method habilidad(){
         if(!grupo.isEmpty()){return habilidad + factorDeAumento}
         else{return habilidad}
     }
-    method interpretaBien(cancion) = cancion.duraMasX()
+    override method interpretaBien(cancion) = super(cancion) || cancion.duraMasX(300)
+        
     method factorDeAumento(nuevoFactor){factorDeAumento=nuevoFactor}
     method tarifa(presentacion){
         if(presentacion.musicos().size() > 1){ return tarifa/2}
@@ -138,28 +127,35 @@ var factorDeAumento
 class VocalistaPopular inherits Musico{
 var palabraAumentaHabilidad
 
-    method habilidad(){
+    override method habilidad(){
         if(!grupo.isEmpty()){return habilidad - 20}
         else{return habilidad}
     }
     method palabraAumentaHabilidad(nuevaPalabra){palabraAumentaHabilidad = nuevaPalabra}
-    method interpretaBien(cancion) = cancion.tienePalabra(palabraAumentaHabilidad)
+    override method interpretaBien(cancion) = super(cancion) || cancion.tienePalabra(palabraAumentaHabilidad)
     method tarifa(presentacion){
         if(presentacion.esConcurrido()){return tarifa}
         else{return tarifa -100}
     }
 }
 
+
 class Cancion{
     const tituloPrincipal
-    const letra
-    const duracion
+    var letra
+    var duracion
 
     method tituloPrincipal() = tituloPrincipal
     method letra() = letra
+    method letra(nuevaLetra){letra = nuevaLetra}
     method duracion() = duracion
+    method duracion(nuevaDuracion){duracion = nuevaDuracion}
     method duraMasX(duracionX){return duracion > duracionX}
-    method tienePabalabra(palabra){return letra.contains(palabra)}
+    method tienePalabra(palabra){return self.letra().contains(palabra)}
+    method remix(){
+        self.duracion( self.duracion() *3)
+        self.letra("mueve tu cuerpo baby "+self.letra()+" yeah oh yeah")
+    }
 }
 
 class Album{
@@ -168,6 +164,7 @@ class Album{
     const fechaLanzamiento
     const unidadesAlaVenta
     const unidadesVendidas
+    var property criterio = new CriterioMayorDuracion()
 
     method canciones()= canciones
     method tituloAlbum()= tituloAlbum
@@ -176,6 +173,23 @@ class Album{
     method unidadesVendidas()= unidadesVendidas
     method duracion() = self.canciones().sum{cancion => cancion.duracion()}
     method esMinimalista() = self.canciones().all{cancion => !cancion.duraMasX(180)}
-    method cancionMasLarga() = self.canciones().max{cancion => cancion.letra().size()}.tituloPrincipal()
+    method cancionMayor() = self.canciones().max{cancion => criterio.criterioMayor(cancion)}.tituloPrincipal()
     method tieneBuenasVentas() = self.unidadesVendidas() > self.unidadesAlaVenta()*0.75
+    method letrasCanciones(){
+        return self.canciones().map{cancion => cancion.letra()} 
+    }
+    method concatenarLetras(){
+        return self.letrasCanciones().fold("",{letra1,letra2 => letra1+letra2})
+    }
 }
+
+class CriterioMayorLetra{
+    method criterioMayor(cancion) = cancion.letra().size()
+}
+class CriterioMayorDuracion{
+    method criterioMayor(cancion) = cancion.duracion()
+}
+class CriterioMayorTitulo{
+    method criterioMayor(cancion) = cancion.tituloPrincipal().size()
+}
+
