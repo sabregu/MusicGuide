@@ -1,6 +1,6 @@
 //Musicos
-const kike = new MusicoDeGrupo(habilidad=60,factorDeAumento=20,grupo= null,tarifa= null,albumes=#{})
-const soledad = new VocalistaPopular(habilidad=55,palabraAumentaHabilidad="amor",grupo= null,tarifa= null,albumes=#{laSole})
+const kike = new MusicoDeGrupo(habilidad=60,factorDeAumento=20,grupo= "",tarifa= null,albumes=#{})
+const soledad = new VocalistaPopular(habilidad=55,palabraAumentaHabilidad="amor",grupo= "",tarifa= null,albumes=#{laSole})
 const joaquin = new MusicoDeGrupo(grupo = "pimpinela",habilidad = 20,tarifa = 100,albumes = #{especialFamilia},factorDeAumento=5)
 const lucia = new VocalistaPopular(grupo = "pimpinela",habilidad = 70,tarifa= 500,palabraAumentaHabilidad= "familia",albumes= #{})
 
@@ -12,6 +12,7 @@ const eres = new Cancion(tituloPrincipal = "eres",duracion = 145, letra="Eres lo
 const corazon = new Cancion(tituloPrincipal = "corazon americano",duracion= 154,letra="Canta corazón, canta más alto, que tu pena al fin se va marchando, el nuevo milenio ha de encontrarnos, junto corazón, como soñamos")
 const alma = new Cancion(tituloPrincipal= "Alma de diamante",duracion = 216,letra ="Ven a mí con tu dulce luz alma de diamante. Y aunque el sol se nuble después sos alma de diamante. cielo o piel silencio o verdad sos alma de diamante. Por eso ven así con la humanidad alma de diamante")
 const crisantemo = new Cancion(tituloPrincipal="Crisantemo",duracion = 175,letra = "Tócame junto a esta pared, yo quedé por aquí... cuando no hubo más luz... quiero mirar a través de mi piel... Crisantemo, que se abrió... encuentra el camino hacia el cielo")
+const alicia = new Cancion(tituloPrincipal= "Cancion de Alicia en el pais",duracion= 510,letra= "Quién sabe Alicia, este país no estuvo hecho porque sí. Te vas a ir, vas a salir pero te quedas, ¿dónde más vas a ir? Y es que aquí, sabes el trabalenguas, trabalenguas, el asesino te asesina, y es mucho para ti. Se acabó ese juego que te hacía feliz.")
 
 //Albumes
 const especialFamilia = new Album(canciones = #{laFamilia},tituloAlbum= "Especial La Familia",fechaLanzamiento=920617,unidadesAlaVenta=100000,unidadesVendidas=890000)
@@ -19,19 +20,11 @@ const laSole = new Album(canciones = #{eres,corazon},tituloAlbum= "La Sole",fech
 const paraLosArboles = new Album(canciones=#{cisne,alma},tituloAlbum="para llosa arboles",fechaLanzamiento=030331,unidadesAlaVenta=50000,unidadesVendidas=49000)
 const just = new Album(canciones=#{crisantemo},tituloAlbum="just Crisantemo",fechaLanzamiento=071205,unidadesAlaVenta=28000,unidadesVendidas=27500)
 const probar = new Album(canciones=#{alma,crisantemo},tituloAlbum = null,fechaLanzamiento = null,unidadesAlaVenta= null,unidadesVendidas= null)
-object luisAlberto inherits Musico{
-    override method habilidad() = habilidad
-    method habilidad(guitarra) {if(guitarra.valor() *8 > 100){return 100}
-    else{return guitarra.valor() *8}}
 
-    override method interpretaBien(cancion){return true}
-
-    method tarifa(presentacion){
-        if(presentacion.fecha() < 201101){return tarifa}
-        else{return tarifa+200}
-    }
-    //201101 es 1ro de noviembre de 2020
-}
+//Estadios
+const lunaPark = new Estadio(fecha=210420,musicos=#{luisAlberto,joaquin,lucia},capacidad=9290)
+const laTrastienda = new Estadio(fecha=201115,musicos=#{luisAlberto,joaquin,lucia},capacidad=400)
+const pdpalooza = new Estadio(fecha=201218,musicos=#{},capacidad=9290)
 
 class Musico{
 var grupo = null
@@ -62,50 +55,8 @@ method mashup(canciones){
 }
 method habilidad()
 method interpretaBien(cancion) {return self.todasSusCanciones().contains(cancion) || self.habilidad() > 60}
-}
-
-object guitarraFender{
-    const valor = 15
-    method valor() = valor
-}
-
-object guitarraGibson{
-    const valor = 15
-    var property estado = "sana"
-
-    method valor(){
-        if(self.estado() == "sana"){return valor}
-        else{return valor/3}
-    }
-}
-
-
-object lunaPark{
-    const property fecha = 210420
-    const property musicos = [luisAlberto,joaquin,lucia]
-    const capacidad = 9290
-
-    method costo(){
-        return musicos.sum{musico => musico.tarifa(self)}
-    }
-    method esConcurrido() = capacidad > 5000
-}
-
-object laTrastienda{
-    const property fecha = 201115
-    const property musicos = [luisAlberto,joaquin,lucia]
-    const capacidad = 400
-
-    method capacidad(fecha1){
-        if(fecha.esSabado()){return capacidad+300}
-        else{return capacidad}
-    }
-
-    method costo(){
-        return musicos.sum{musico => musico.tarifa(self)}
-    }
-
-    method esConcurrido() = capacidad > 5000
+method esHabilidoso(num) = self.habilidad() > num
+method escribioCanciones() = !self.todasSusCanciones().isEmpty()
 }
 
 class MusicoDeGrupo inherits Musico{
@@ -123,7 +74,20 @@ var factorDeAumento
         else{return tarifa}
     }
 }
+object luisAlberto inherits Musico{
+    var property guitarra = guitarraGibson
 
+    override method habilidad() {if(guitarra.valor() *8 > 100){return 100}
+    else{return guitarra.valor() *8}}
+
+    override method interpretaBien(cancion){return true}
+
+    method tarifa(presentacion){
+        if(presentacion.fecha() < 201101){return tarifa}
+        else{return tarifa+200}
+    }
+    //201101 es 1ro de noviembre de 2020
+}
 class VocalistaPopular inherits Musico{
 var palabraAumentaHabilidad
 
@@ -139,7 +103,47 @@ var palabraAumentaHabilidad
     }
 }
 
+object guitarraFender{
+    const valor = 15
+    method valor() = valor
+}
 
+object guitarraGibson{
+    const valor = 15
+    var property estado = "sana"
+
+    method valor(){
+        if(self.estado() == "sana"){return valor}
+        else{return valor/3}
+    }
+}
+
+class Estadio{
+    const fecha
+    const musicos = #{}
+    const capacidad
+
+    method musicos() = musicos
+    method esConcurrido() = capacidad > 5000
+    method costo(){
+        return musicos.sum{musico => musico.tarifa(self)}
+    }
+    method agregarMusico(musico){
+        const num = 70
+        if(!musico.esHabilidoso(num)){
+            throw new MessageNotUnderstoodException(message = "no se lo acepta por tener habilidad menor a 70")
+        }
+        if(!musico.escribioCanciones()){
+            throw new MessageNotUnderstoodException(message = "no se lo acepta por no tener canciones en su autoria")
+        }
+        if(!musico.interpretaBien(alicia)){
+            throw new MessageNotUnderstoodException(message = "no se lo acepta por no interpretar bien alicia")
+        }
+        else if(musico.esHabilidoso(num) || musico.escribioCanciones() || musico.interpretaBien(alicia)){
+            musicos.add(musico)
+        }
+    }
+}
 class Cancion{
     const tituloPrincipal
     var letra
